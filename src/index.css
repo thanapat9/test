@@ -1,16 +1,28 @@
 @import "tailwindcss";
 
+:root {
+  --bg: #0f0f17;
+  --surface: #17151f;
+  --surface-raised: #1e1c2a;
+  --border: #2d2b3d;
+  --accent: #8b5cf6;
+  --accent-dim: rgba(139, 92, 246, 0.12);
+  --text: #e8e5f0;
+  --text-2: #8a879a;
+  --text-3: #4a4760;
+}
+
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #0a0a0a;
-  color: #f0ede8;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
 }
 
 #root { min-height: 100vh; }
-
+input, button { font-family: inherit; }
 input:focus { outline: none; }

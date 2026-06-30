@@ -2,12 +2,12 @@ export default function StreakDisplay({ streak, longestStreak, totalDays }) {
   return (
     <div className="flex flex-col items-center gap-1 py-8">
       <div
-        className="text-[80px] font-black leading-none tracking-tighter"
-        style={{ color: streak > 0 ? '#f97316' : '#333' }}
+        className="text-[80px] font-black leading-none tracking-tighter transition-all duration-500"
+        style={{ color: streak > 0 ? 'var(--accent)' : 'var(--text-3)' }}
       >
         {streak}
       </div>
-      <div className="text-xs text-[#555] uppercase tracking-[0.2em] font-medium mt-1">
+      <div className="text-[11px] uppercase tracking-[0.2em] font-medium" style={{ color: 'var(--text-3)' }}>
         day streak
       </div>
 
@@ -15,21 +15,24 @@ export default function StreakDisplay({ streak, longestStreak, totalDays }) {
         {Array.from({ length: 7 }, (_, i) => (
           <div
             key={i}
-            className="w-2 h-2 rounded-full"
-            style={{ background: i < Math.min(streak, 7) ? '#f97316' : '#1e1e1e' }}
+            className="w-2 h-2 rounded-full transition-all duration-300"
+            style={{
+              background: i < Math.min(streak, 7) ? 'var(--accent)' : 'var(--border)',
+              boxShadow: i < Math.min(streak, 7) ? '0 0 6px var(--accent)' : 'none',
+            }}
           />
         ))}
       </div>
 
-      <div className="flex gap-10 mt-5 text-center">
+      <div className="flex gap-10 mt-6 text-center">
         <div>
-          <div className="text-xl font-bold text-[#f0ede8]">{longestStreak}</div>
-          <div className="text-[10px] text-[#444] uppercase tracking-widest mt-0.5">best</div>
+          <div className="text-xl font-bold" style={{ color: 'var(--text)' }}>{longestStreak}</div>
+          <div className="text-[10px] uppercase tracking-widest mt-0.5" style={{ color: 'var(--text-3)' }}>best</div>
         </div>
-        <div className="w-px bg-[#1e1e1e]" />
+        <div className="w-px" style={{ background: 'var(--border)' }} />
         <div>
-          <div className="text-xl font-bold text-[#f0ede8]">{totalDays}</div>
-          <div className="text-[10px] text-[#444] uppercase tracking-widest mt-0.5">total</div>
+          <div className="text-xl font-bold" style={{ color: 'var(--text)' }}>{totalDays}</div>
+          <div className="text-[10px] uppercase tracking-widest mt-0.5" style={{ color: 'var(--text-3)' }}>total</div>
         </div>
       </div>
     </div>

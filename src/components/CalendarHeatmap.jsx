@@ -7,15 +7,12 @@ function getLastNDays(n) {
   })
 }
 
-const LEVEL_BG = ['#111', '#7c2d12', '#f97316']
-
 export default function CalendarHeatmap({ logs, habitIds }) {
   const days = getLastNDays(7 * 14)
   const today = new Date().toISOString().split('T')[0]
 
   const firstDate = new Date(days[0])
-  const startPad = firstDate.getDay()
-  const padded = [...Array(startPad).fill(null), ...days]
+  const padded = [...Array(firstDate.getDay()).fill(null), ...days]
   const weeks = []
   for (let i = 0; i < padded.length; i += 7) weeks.push(padded.slice(i, i + 7))
 
@@ -27,9 +24,16 @@ export default function CalendarHeatmap({ logs, habitIds }) {
     return 2
   }
 
+  const levelBg = ['var(--surface-raised)', 'rgba(139,92,246,0.3)', 'var(--accent)']
+
   return (
-    <div className="rounded-xl border p-4" style={{ background: '#111', borderColor: '#1e1e1e' }}>
-      <div className="text-[10px] text-[#444] uppercase tracking-widest mb-3">14-week activity</div>
+    <div
+      className="rounded-xl border p-4"
+      style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
+    >
+      <div className="text-[10px] uppercase tracking-widest mb-3" style={{ color: 'var(--text-3)' }}>
+        14-week activity
+      </div>
       <div className="flex gap-1 overflow-x-auto pb-1">
         {weeks.map((week, wi) => (
           <div key={wi} className="flex flex-col gap-1">
@@ -42,8 +46,8 @@ export default function CalendarHeatmap({ logs, habitIds }) {
                   title={dateStr}
                   className="w-3.5 h-3.5 rounded-sm transition-all"
                   style={{
-                    background: LEVEL_BG[getLevel(dateStr)],
-                    outline: dateStr === today ? '1px solid #f97316' : 'none',
+                    background: levelBg[getLevel(dateStr)],
+                    outline: dateStr === today ? '1px solid var(--accent)' : 'none',
                     outlineOffset: '1px',
                   }}
                 />
@@ -53,11 +57,11 @@ export default function CalendarHeatmap({ logs, habitIds }) {
         ))}
       </div>
       <div className="flex items-center gap-1.5 mt-2 justify-end">
-        <span className="text-[10px] text-[#333]">less</span>
-        {LEVEL_BG.map((bg, i) => (
+        <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>less</span>
+        {levelBg.map((bg, i) => (
           <div key={i} className="w-3 h-3 rounded-sm" style={{ background: bg }} />
         ))}
-        <span className="text-[10px] text-[#333]">more</span>
+        <span className="text-[10px]" style={{ color: 'var(--text-3)' }}>more</span>
       </div>
     </div>
   )

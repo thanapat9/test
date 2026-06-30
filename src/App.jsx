@@ -5,12 +5,7 @@ import HabitCard from './components/HabitCard'
 import CalendarHeatmap from './components/CalendarHeatmap'
 import WeeklySummary from './components/WeeklySummary'
 import HabitManager from './components/HabitManager'
-
-function getTodayLabel() {
-  return new Date().toLocaleDateString('en', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  })
-}
+import MilestoneBadges from './components/MilestoneBadges'
 
 const TABS = [
   { id: 'today', label: 'Today' },
@@ -18,35 +13,39 @@ const TABS = [
   { id: 'habits', label: 'Habits' },
 ]
 
+function getTodayLabel() {
+  return new Date().toLocaleDateString('en', { weekday: 'long', day: 'numeric', month: 'long' })
+}
+
 export default function App() {
   const {
     habits, logs, today, todayLog, todayPPL,
-    streak, longestStreak, totalDays,
+    streak, longestStreak, totalDays, unlockedBadges,
     toggleHabit, setNote, addHabit, removeHabit,
   } = useHabits()
 
   const [tab, setTab] = useState('today')
   const habitIds = habits.map(h => h.id)
-  const allDone = habits.every(h => todayLog[h.id]?.done)
+  const allDone = habits.length > 0 && habits.every(h => todayLog[h.id]?.done)
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh', color: '#f0ede8' }}>
-      <div className="max-w-md mx-auto px-4 pb-12">
+    <div style={{ background: 'var(--bg)', minHeight: '100vh', color: 'var(--text)' }}>
+      <div className="max-w-md mx-auto px-4 pb-14">
 
         {/* Header */}
-        <div className="pt-10 pb-6 flex items-center justify-between">
+        <div className="pt-10 pb-5 flex items-end justify-between">
           <div>
-            <h1 className="text-lg font-black tracking-tight" style={{ color: '#f0ede8' }}>
+            <div className="text-xl font-black tracking-tight" style={{ color: 'var(--text)' }}>
               Kaizen
-            </h1>
-            <div className="text-xs mt-0.5" style={{ color: '#444' }}>
+            </div>
+            <div className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
               {getTodayLabel()}
             </div>
           </div>
           {streak > 0 && (
             <div className="text-right">
-              <div className="text-2xl font-black" style={{ color: '#f97316' }}>{streak}</div>
-              <div className="text-[10px] uppercase tracking-widest" style={{ color: '#444' }}>streak</div>
+              <div className="text-2xl font-black" style={{ color: 'var(--accent)' }}>{streak}</div>
+              <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--text-3)' }}>streak</div>
             </div>
           )}
         </div>
@@ -55,25 +54,29 @@ export default function App() {
         {allDone && (
           <div
             className="mb-5 px-4 py-3 rounded-xl text-sm font-medium text-center"
-            style={{ background: '#110e00', border: '1px solid #f9731630', color: '#f97316' }}
+            style={{
+              background: 'rgba(139,92,246,0.1)',
+              border: '1px solid rgba(139,92,246,0.25)',
+              color: 'var(--accent)',
+            }}
           >
             All done for today
           </div>
         )}
 
-        {/* Tab nav */}
+        {/* Tabs */}
         <div
-          className="flex gap-0.5 rounded-lg p-0.5 mb-6"
-          style={{ background: '#111' }}
+          className="flex gap-0.5 rounded-xl p-1 mb-5"
+          style={{ background: 'var(--surface)' }}
         >
           {TABS.map(t => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className="flex-1 py-2 rounded-md text-sm font-medium transition-all duration-150"
+              className="flex-1 py-2 rounded-lg text-sm font-medium transition-all duration-150"
               style={{
-                background: tab === t.id ? '#1e1e1e' : 'transparent',
-                color: tab === t.id ? '#f0ede8' : '#444',
+                background: tab === t.id ? 'var(--surface-raised)' : 'transparent',
+                color: tab === t.id ? 'var(--text)' : 'var(--text-3)',
               }}
             >
               {t.label}
@@ -83,15 +86,15 @@ export default function App() {
 
         {/* TODAY */}
         {tab === 'today' && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div
               className="rounded-xl border"
-              style={{ background: '#111', borderColor: '#1e1e1e' }}
+              style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
             >
               <StreakDisplay streak={streak} longestStreak={longestStreak} totalDays={totalDays} />
             </div>
 
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {habits.map(habit => (
                 <HabitCard
                   key={habit.id}
@@ -107,9 +110,11 @@ export default function App() {
             {/* 7-day strip */}
             <div
               className="rounded-xl border p-4"
-              style={{ background: '#111', borderColor: '#1e1e1e' }}
+              style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
             >
-              <div className="text-[10px] text-[#444] uppercase tracking-widest mb-3">Last 7 days</div>
+              <div className="text-[10px] uppercase tracking-widest mb-3" style={{ color: 'var(--text-3)' }}>
+                Last 7 days
+              </div>
               <div className="flex justify-between">
                 {Array.from({ length: 7 }, (_, i) => {
                   const d = new Date()
@@ -123,15 +128,15 @@ export default function App() {
 
                   return (
                     <div key={i} className="flex flex-col items-center gap-1.5">
-                      <div className="text-[10px]" style={{ color: '#444' }}>
+                      <div className="text-[10px]" style={{ color: 'var(--text-3)' }}>
                         {d.toLocaleDateString('en', { weekday: 'narrow' })}
                       </div>
                       <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold transition-all"
                         style={{
-                          background: full ? '#f97316' : partial ? '#3a2200' : '#161616',
-                          color: full ? '#0a0a0a' : partial ? '#f97316' : '#2a2a2a',
-                          outline: isToday ? '1px solid #f9731650' : 'none',
+                          background: full ? 'var(--accent)' : partial ? 'var(--accent-dim)' : 'var(--surface-raised)',
+                          color: full ? 'var(--bg)' : partial ? 'var(--accent)' : 'var(--text-3)',
+                          outline: isToday ? '1px solid var(--accent)' : 'none',
                           outlineOffset: '2px',
                         }}
                       >
@@ -153,8 +158,8 @@ export default function App() {
         {/* HABITS */}
         {tab === 'habits' && (
           <div className="space-y-6">
+            <MilestoneBadges unlockedBadges={unlockedBadges} />
             <HabitManager habits={habits} onAdd={addHabit} onRemove={removeHabit} />
-
             <CalendarHeatmap logs={logs} habitIds={habitIds} />
           </div>
         )}

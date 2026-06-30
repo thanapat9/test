@@ -9,6 +9,18 @@ export const DEFAULT_HABITS = [
   { id: 'workout', name: 'Workout', description: 'Push · Pull · Leg', hasNote: false, isPPL: true, deletable: false },
 ]
 
+export const BADGES = [
+  { id: 's3',   label: 'First Flame',    desc: '3-day streak',   type: 'streak', threshold: 3 },
+  { id: 's7',   label: 'Week Solid',     desc: '7-day streak',   type: 'streak', threshold: 7 },
+  { id: 's14',  label: 'Two Weeks',      desc: '14-day streak',  type: 'streak', threshold: 14 },
+  { id: 's30',  label: 'Month In',       desc: '30-day streak',  type: 'streak', threshold: 30 },
+  { id: 's100', label: 'Kaizen Master',  desc: '100-day streak', type: 'streak', threshold: 100 },
+  { id: 't10',  label: 'Ten Days',       desc: '10 days total',  type: 'total',  threshold: 10 },
+  { id: 't25',  label: 'Twenty Five',    desc: '25 days total',  type: 'total',  threshold: 25 },
+  { id: 't50',  label: 'Half Century',   desc: '50 days total',  type: 'total',  threshold: 50 },
+  { id: 't100', label: 'Century',        desc: '100 days total', type: 'total',  threshold: 100 },
+]
+
 function todayStr() {
   return new Date().toISOString().split('T')[0]
 }
@@ -26,11 +38,9 @@ function calcStreak(logs, habitIds) {
   const today = todayStr()
   let streak = 0
   const d = new Date()
-
   while (true) {
     const dateStr = d.toISOString().split('T')[0]
     const hasAny = habitIds.some(id => logs[dateStr]?.[id]?.done)
-
     if (dateStr === today) {
       if (hasAny) streak++
       d.setDate(d.getDate() - 1)
@@ -65,7 +75,6 @@ export function useHabits() {
     try { return JSON.parse(localStorage.getItem(HABITS_KEY)) || DEFAULT_HABITS }
     catch { return DEFAULT_HABITS }
   })
-
   const [logs, setLogs] = useState(() => {
     try { return JSON.parse(localStorage.getItem(LOGS_KEY)) || {} }
     catch { return {} }
@@ -78,6 +87,18 @@ export function useHabits() {
   const todayLog = logs[today] || {}
   const todayPPL = getNextPPL(logs)
   const habitIds = habits.map(h => h.id)
+
+  const streak = calcStreak(logs, habitIds)
+  const longestStreak = calcLongest(logs, habitIds)
+  const totalDays = Object.keys(logs).filter(d =>
+    habitIds.some(id => logs[d]?.[id]?.done)
+  ).length
+
+  const unlockedBadges = new Set(
+    BADGES
+      .filter(b => b.type === 'streak' ? longestStreak >= b.threshold : totalDays >= b.threshold)
+      .map(b => b.id)
+  )
 
   function toggleHabit(id, extra = {}) {
     setLogs(prev => {
@@ -110,22 +131,9 @@ export function useHabits() {
     setHabits(prev => prev.filter(h => h.id !== id))
   }
 
-  const totalDays = Object.keys(logs).filter(d =>
-    habitIds.some(id => logs[d]?.[id]?.done)
-  ).length
-
   return {
-    habits,
-    logs,
-    today,
-    todayLog,
-    todayPPL,
-    streak: calcStreak(logs, habitIds),
-    longestStreak: calcLongest(logs, habitIds),
-    totalDays,
-    toggleHabit,
-    setNote,
-    addHabit,
-    removeHabit,
+    habits, logs, today, todayLog, todayPPL,
+    streak, longestStreak, totalDays, unlockedBadges,
+    toggleHabit, setNote, addHabit, removeHabit,
   }
 }

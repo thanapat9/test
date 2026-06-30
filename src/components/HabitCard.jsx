@@ -1,95 +1,99 @@
 import { useState } from 'react'
 
-export default function HabitCard({ icon, title, subtitle, done, onToggle, note, onNoteChange, showNote = false }) {
-  const [expanded, setExpanded] = useState(false)
-  const [localNote, setLocalNote] = useState(note || '')
+export default function HabitCard({ habit, logEntry, todayPPL, onToggle, onNote }) {
+  const [showNote, setShowNote] = useState(false)
+  const [noteInput, setNoteInput] = useState(logEntry?.note || '')
+
+  const done = logEntry?.done || false
+  const subtitle = habit.isPPL
+    ? (done ? `${logEntry?.type} day — done` : `${todayPPL} day`)
+    : habit.description
 
   function handleToggle() {
-    onToggle(localNote)
+    const extra = habit.isPPL ? { type: todayPPL } : {}
+    onToggle(habit.id, extra)
   }
 
   function handleNoteSubmit(e) {
     e.preventDefault()
-    onNoteChange?.(localNote)
-    setExpanded(false)
+    onNote(habit.id, noteInput)
+    setShowNote(false)
   }
 
   return (
     <div
-      className={`rounded-2xl border transition-all duration-300 ${
-        done
-          ? 'border-green-500/40 bg-green-950/30'
-          : 'border-gray-700/60 bg-gray-900/50'
-      }`}
+      className="rounded-xl border transition-all duration-200"
+      style={{
+        background: done ? '#110e00' : '#111',
+        borderColor: done ? '#f9731640' : '#1e1e1e',
+      }}
     >
-      <div className="flex items-center gap-4 p-5">
-        <div
-          className={`text-4xl transition-all duration-300 ${done ? '' : 'grayscale opacity-60'}`}
-        >
-          {icon}
-        </div>
-
-        <div className="flex-1 text-left">
-          <div className="font-semibold text-lg text-gray-100">{title}</div>
-          <div className="text-sm text-gray-400">{subtitle}</div>
-          {done && note && (
-            <div className="text-xs text-green-400 mt-1 italic">"{note}"</div>
+      <div className="flex items-center gap-4 px-5 py-4">
+        <div className="flex-1 min-w-0">
+          <div className="font-semibold text-[#f0ede8] text-sm">{habit.name}</div>
+          <div
+            className="text-xs mt-0.5"
+            style={{ color: done && habit.isPPL ? '#f97316' : '#555' }}
+          >
+            {subtitle}
+          </div>
+          {done && logEntry?.note && (
+            <div className="text-xs text-[#666] mt-1.5 italic truncate">
+              {logEntry.note}
+            </div>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {showNote && done && (
+        <div className="flex items-center gap-2 shrink-0">
+          {habit.hasNote && (
             <button
-              onClick={() => setExpanded(!expanded)}
-              className="text-gray-500 hover:text-gray-300 text-xl transition-colors"
+              onClick={() => setShowNote(s => !s)}
+              className="text-[10px] text-[#444] uppercase tracking-wider hover:text-[#888] transition-colors px-2 py-1"
             >
-              ✏️
+              note
             </button>
           )}
           <button
             onClick={handleToggle}
-            className={`w-12 h-12 rounded-full border-2 flex items-center justify-center text-xl transition-all duration-300 active:scale-90 ${
-              done
-                ? 'border-green-500 bg-green-500 text-white shadow-lg shadow-green-500/30'
-                : 'border-gray-600 bg-transparent text-gray-600 hover:border-gray-400'
-            }`}
+            className="w-9 h-9 rounded-lg border-2 flex items-center justify-center text-sm font-bold transition-all duration-200 active:scale-90"
+            style={{
+              borderColor: done ? '#f97316' : '#2a2a2a',
+              background: done ? '#f97316' : 'transparent',
+              color: done ? '#0a0a0a' : '#333',
+            }}
           >
             {done ? '✓' : ''}
           </button>
         </div>
       </div>
 
-      {showNote && expanded && (
-        <form onSubmit={handleNoteSubmit} className="px-5 pb-4 border-t border-gray-800/50">
-          <div className="pt-3 text-sm text-gray-400 mb-2">วันนี้เรียนอะไร?</div>
-          <div className="flex gap-2">
+      {habit.hasNote && showNote && (
+        <form
+          onSubmit={handleNoteSubmit}
+          className="px-5 pb-4 border-t"
+          style={{ borderColor: '#1a1a1a' }}
+        >
+          <div className="pt-3 flex gap-2">
             <input
               autoFocus
               type="text"
-              value={localNote}
-              onChange={e => setLocalNote(e.target.value)}
-              placeholder="เช่น Chapter 3: dbt models, SQL window functions..."
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 placeholder-gray-600 outline-none focus:border-purple-500 transition-colors"
+              value={noteInput}
+              onChange={e => setNoteInput(e.target.value)}
+              placeholder="วันนี้เรียนอะไร..."
+              className="flex-1 text-xs px-3 py-2 rounded-lg border text-[#f0ede8] placeholder-[#333]"
+              style={{ background: '#0f0f0f', borderColor: '#2a2a2a' }}
+              onFocus={e => (e.target.style.borderColor = '#f97316')}
+              onBlur={e => (e.target.style.borderColor = '#2a2a2a')}
             />
             <button
               type="submit"
-              className="bg-purple-600 hover:bg-purple-500 text-white rounded-lg px-4 py-2 text-sm transition-colors"
+              className="text-xs px-3 py-2 rounded-lg font-medium transition-colors"
+              style={{ background: '#f97316', color: '#0a0a0a' }}
             >
-              Save
+              save
             </button>
           </div>
         </form>
-      )}
-
-      {showNote && !expanded && !done && (
-        <div className="px-5 pb-4">
-          <button
-            onClick={() => setExpanded(true)}
-            className="text-xs text-gray-600 hover:text-gray-400 transition-colors"
-          >
-            + เพิ่มโน้ตว่าวันนี้เรียนอะไร
-          </button>
-        </div>
       )}
     </div>
   )

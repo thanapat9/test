@@ -1,153 +1,131 @@
 import { useState, useEffect } from 'react'
 
-const STORAGE_KEY = 'kaizen_habits'
+const LOGS_KEY = 'kaizen_logs_v2'
+const HABITS_KEY = 'kaizen_habits_v2'
+const PPL_CYCLE = ['Push', 'Pull', 'Leg']
 
-const WORKOUT_CYCLE = ['Push', 'Pull', 'Leg']
+export const DEFAULT_HABITS = [
+  { id: 'course', name: 'Data Engineer Course', description: '1 chapter minimum', hasNote: true, isPPL: false, deletable: false },
+  { id: 'workout', name: 'Workout', description: 'Push · Pull · Leg', hasNote: false, isPPL: true, deletable: false },
+]
 
-function getWorkoutForDate(dateStr, logs) {
-  // Find what workout to do based on past completed workouts
-  const completedWorkouts = Object.entries(logs)
-    .filter(([, v]) => v.workout?.done)
-    .sort(([a], [b]) => a.localeCompare(b))
-
-  if (completedWorkouts.length === 0) return WORKOUT_CYCLE[0]
-
-  const lastDone = completedWorkouts[completedWorkouts.length - 1]
-  const lastType = lastDone[1].workout?.type
-  const lastIndex = WORKOUT_CYCLE.indexOf(lastType)
-  return WORKOUT_CYCLE[(lastIndex + 1) % WORKOUT_CYCLE.length]
+function todayStr() {
+  return new Date().toISOString().split('T')[0]
 }
 
-function getStreak(logs) {
-  const today = new Date()
+function getNextPPL(logs) {
+  const done = Object.entries(logs)
+    .filter(([, v]) => v['workout']?.done && v['workout']?.type)
+    .sort(([a], [b]) => a.localeCompare(b))
+  if (done.length === 0) return PPL_CYCLE[0]
+  const lastType = done[done.length - 1][1]['workout'].type
+  return PPL_CYCLE[(PPL_CYCLE.indexOf(lastType) + 1) % PPL_CYCLE.length]
+}
+
+function calcStreak(logs, habitIds) {
+  const today = todayStr()
   let streak = 0
-  let current = new Date(today)
+  const d = new Date()
 
   while (true) {
-    const dateStr = current.toISOString().split('T')[0]
-    const log = logs[dateStr]
+    const dateStr = d.toISOString().split('T')[0]
+    const hasAny = habitIds.some(id => logs[dateStr]?.[id]?.done)
 
-    // Today: count even if not done yet (don't break streak for today)
-    if (dateStr === today.toISOString().split('T')[0]) {
-      const isComplete = log?.course?.done || log?.workout?.done
-      if (isComplete) streak++
-      current.setDate(current.getDate() - 1)
+    if (dateStr === today) {
+      if (hasAny) streak++
+      d.setDate(d.getDate() - 1)
       continue
     }
-
-    if (!log || (!log.course?.done && !log.workout?.done)) break
+    if (!hasAny) break
     streak++
-    current.setDate(current.getDate() - 1)
+    d.setDate(d.getDate() - 1)
   }
-
   return streak
 }
 
-function getLongestStreak(logs) {
+function calcLongest(logs, habitIds) {
   const dates = Object.keys(logs).sort()
-  if (dates.length === 0) return 0
-
-  let longest = 0
-  let current = 0
-  let prev = null
-
+  let longest = 0, current = 0, prev = null
   for (const dateStr of dates) {
-    const log = logs[dateStr]
-    const hasActivity = log?.course?.done || log?.workout?.done
-    if (!hasActivity) {
-      current = 0
-      prev = null
-      continue
-    }
-
-    if (prev === null) {
-      current = 1
-    } else {
-      const prevDate = new Date(prev)
-      const currDate = new Date(dateStr)
-      const diff = (currDate - prevDate) / (1000 * 60 * 60 * 24)
-      if (diff === 1) {
-        current++
-      } else {
-        current = 1
-      }
+    const hasAny = habitIds.some(id => logs[dateStr]?.[id]?.done)
+    if (!hasAny) { current = 0; prev = null; continue }
+    if (!prev) { current = 1 }
+    else {
+      const diff = (new Date(dateStr) - new Date(prev)) / 86400000
+      current = diff === 1 ? current + 1 : 1
     }
     longest = Math.max(longest, current)
     prev = dateStr
   }
-
   return longest
 }
 
 export function useHabits() {
-  const [logs, setLogs] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')
-    } catch {
-      return {}
-    }
+  const [habits, setHabits] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(HABITS_KEY)) || DEFAULT_HABITS }
+    catch { return DEFAULT_HABITS }
   })
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(logs))
-  }, [logs])
+  const [logs, setLogs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(LOGS_KEY)) || {} }
+    catch { return {} }
+  })
 
-  const today = new Date().toISOString().split('T')[0]
+  useEffect(() => { localStorage.setItem(HABITS_KEY, JSON.stringify(habits)) }, [habits])
+  useEffect(() => { localStorage.setItem(LOGS_KEY, JSON.stringify(logs)) }, [logs])
+
+  const today = todayStr()
   const todayLog = logs[today] || {}
-  const todayWorkout = getWorkoutForDate(today, logs)
+  const todayPPL = getNextPPL(logs)
+  const habitIds = habits.map(h => h.id)
 
-  function toggleCourse(note = '') {
+  function toggleHabit(id, extra = {}) {
     setLogs(prev => {
-      const current = prev[today]?.course
+      const current = prev[today]?.[id]
       return {
         ...prev,
         [today]: {
           ...prev[today],
-          course: current?.done
-            ? { done: false, note: '' }
-            : { done: true, note, completedAt: new Date().toISOString() },
-        },
-      }
-    })
-  }
-
-  function toggleWorkout(type = todayWorkout) {
-    setLogs(prev => {
-      const current = prev[today]?.workout
-      return {
-        ...prev,
-        [today]: {
-          ...prev[today],
-          workout: current?.done
+          [id]: current?.done
             ? { done: false }
-            : { done: true, type, completedAt: new Date().toISOString() },
+            : { done: true, completedAt: new Date().toISOString(), ...extra },
         },
       }
     })
   }
 
-  function updateCourseNote(note) {
+  function setNote(id, note) {
     setLogs(prev => ({
       ...prev,
-      [today]: {
-        ...prev[today],
-        course: { ...prev[today]?.course, note },
-      },
+      [today]: { ...prev[today], [id]: { ...prev[today]?.[id], note } },
     }))
   }
 
+  function addHabit(name, description = '') {
+    const id = 'h_' + Date.now()
+    setHabits(prev => [...prev, { id, name, description, hasNote: false, isPPL: false, deletable: true }])
+  }
+
+  function removeHabit(id) {
+    setHabits(prev => prev.filter(h => h.id !== id))
+  }
+
+  const totalDays = Object.keys(logs).filter(d =>
+    habitIds.some(id => logs[d]?.[id]?.done)
+  ).length
+
   return {
+    habits,
     logs,
     today,
     todayLog,
-    todayWorkout,
-    streak: getStreak(logs),
-    longestStreak: getLongestStreak(logs),
-    totalDays: Object.keys(logs).filter(
-      d => logs[d]?.course?.done || logs[d]?.workout?.done
-    ).length,
-    toggleCourse,
-    toggleWorkout,
-    updateCourseNote,
+    todayPPL,
+    streak: calcStreak(logs, habitIds),
+    longestStreak: calcLongest(logs, habitIds),
+    totalDays,
+    toggleHabit,
+    setNote,
+    addHabit,
+    removeHabit,
   }
 }

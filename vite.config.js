@@ -12,9 +12,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'favicon.svg'],
       manifest: {
-        name: 'Kaizen Tracker',
-        short_name: 'Kaizen',
-        description: 'Daily habit tracker — 改善',
+        name: 'Stack',
+        short_name: 'Stack',
+        description: 'Daily habit tracker',
         theme_color: '#0f0f17',
         background_color: '#0f0f17',
         display: 'standalone',

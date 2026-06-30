@@ -36,7 +36,7 @@ export default function App() {
         <div className="pt-10 pb-5 flex items-end justify-between">
           <div>
             <div className="text-xl font-black tracking-tight" style={{ color: 'var(--text)' }}>
-              Kaizen
+              Stack
             </div>
             <div className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>
               {getTodayLabel()}

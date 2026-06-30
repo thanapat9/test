@@ -135,7 +135,7 @@ export default function WeeklySummary({ habits, logs }) {
                   style={{
                     background: 'var(--accent-dim)',
                     color: 'var(--accent)',
-                    border: '1px solid rgba(139,92,246,0.2)',
+                    border: '1px solid rgba(249,115,22,0.2)',
                   }}
                 >
                   {type}

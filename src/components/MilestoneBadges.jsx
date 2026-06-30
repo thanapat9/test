@@ -23,8 +23,8 @@ export default function MilestoneBadges({ unlockedBadges }) {
               key={badge.id}
               className="rounded-xl border p-3 flex flex-col items-center text-center transition-all duration-200"
               style={{
-                background: earned ? 'rgba(139,92,246,0.1)' : 'var(--surface)',
-                borderColor: earned ? 'rgba(139,92,246,0.35)' : 'var(--border)',
+                background: earned ? 'rgba(249,115,22,0.1)' : 'var(--surface)',
+                borderColor: earned ? 'rgba(249,115,22,0.35)' : 'var(--border)',
               }}
             >
               <div

@@ -23,8 +23,8 @@ export default function HabitCard({ habit, logEntry, todayPPL, onToggle, onNote 
     <div
       className="rounded-xl border transition-all duration-200"
       style={{
-        background: done ? 'rgba(139,92,246,0.07)' : 'var(--surface)',
-        borderColor: done ? 'rgba(139,92,246,0.3)' : 'var(--border)',
+        background: done ? 'rgba(249,115,22,0.07)' : 'var(--surface)',
+        borderColor: done ? 'rgba(249,115,22,0.35)' : 'var(--border)',
       }}
     >
       <div className="flex items-center gap-4 px-4 py-4">

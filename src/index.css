@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0f0f17;
-  --surface: #17151f;
-  --surface-raised: #1e1c2a;
-  --border: #2d2b3d;
-  --accent: #8b5cf6;
-  --accent-dim: rgba(139, 92, 246, 0.12);
-  --text: #e8e5f0;
-  --text-2: #8a879a;
-  --text-3: #4a4760;
+  --bg: #fffbf8;
+  --surface: #fff5ec;
+  --surface-raised: #ffebd8;
+  --border: #fdd9bb;
+  --accent: #f97316;
+  --accent-dim: rgba(249, 115, 22, 0.1);
+  --text: #2c1a0e;
+  --text-2: #8b6250;
+  --text-3: #c09a84;
 }
 
 * { box-sizing: border-box; }

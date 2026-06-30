@@ -24,7 +24,7 @@ export default function CalendarHeatmap({ logs, habitIds }) {
     return 2
   }
 
-  const levelBg = ['var(--surface-raised)', 'rgba(139,92,246,0.3)', 'var(--accent)']
+  const levelBg = ['var(--surface-raised)', 'rgba(249,115,22,0.3)', 'var(--accent)']
 
   return (
     <div

@@ -55,8 +55,8 @@ export default function App() {
           <div
             className="mb-5 px-4 py-3 rounded-xl text-sm font-medium text-center"
             style={{
-              background: 'rgba(139,92,246,0.1)',
-              border: '1px solid rgba(139,92,246,0.25)',
+              background: 'rgba(249,115,22,0.1)',
+              border: '1px solid rgba(249,115,22,0.25)',
               color: 'var(--accent)',
             }}
           >

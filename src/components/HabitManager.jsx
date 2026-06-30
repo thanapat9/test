@@ -57,7 +57,7 @@ export default function HabitManager({ habits, onAdd, onRemove }) {
         <form
           onSubmit={handleAdd}
           className="rounded-xl border p-4 space-y-3"
-          style={{ background: 'var(--surface)', borderColor: 'rgba(139,92,246,0.3)' }}
+          style={{ background: 'var(--surface)', borderColor: 'rgba(249,115,22,0.3)' }}
         >
           <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--accent)' }}>
             New habit

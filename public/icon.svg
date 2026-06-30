@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="110" fill="#0f0f17"/>
-  <rect x="1" y="1" width="510" height="510" rx="109" fill="none" stroke="#2d2b3d" stroke-width="2"/>
-  <text x="256" y="348" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="300" font-weight="900" fill="#8b5cf6">K</text>
+  <rect width="512" height="512" rx="110" fill="#fff5ec"/>
+  <rect x="1" y="1" width="510" height="510" rx="109" fill="none" stroke="#fdd9bb" stroke-width="2"/>
+  <text x="256" y="348" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="300" font-weight="900" fill="#f97316">K</text>
 </svg>

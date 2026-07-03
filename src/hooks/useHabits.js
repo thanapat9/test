@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { calcXP, getLevel } from '../data/levels'
 
 const LOGS_KEY = 'kaizen_logs_v2'
 const HABITS_KEY = 'kaizen_habits_v2'
@@ -131,9 +132,12 @@ export function useHabits() {
     setHabits(prev => prev.filter(h => h.id !== id))
   }
 
+  const xp = calcXP(logs, habitIds)
+
   return {
     habits, logs, today, todayLog, todayPPL,
     streak, longestStreak, totalDays, unlockedBadges,
+    xp, levelInfo: getLevel(xp),
     toggleHabit, setNote, addHabit, removeHabit,
   }
 }

@@ -6,6 +6,8 @@ import CalendarHeatmap from './components/CalendarHeatmap'
 import WeeklySummary from './components/WeeklySummary'
 import HabitManager from './components/HabitManager'
 import MilestoneBadges from './components/MilestoneBadges'
+import XPBar from './components/XPBar'
+import DailyQuote from './components/DailyQuote'
 
 const TABS = [
   { id: 'today', label: 'Today' },
@@ -21,6 +23,7 @@ export default function App() {
   const {
     habits, logs, today, todayLog, todayPPL,
     streak, longestStreak, totalDays, unlockedBadges,
+    xp, levelInfo,
     toggleHabit, setNote, addHabit, removeHabit,
   } = useHabits()
 
@@ -87,12 +90,16 @@ export default function App() {
         {/* TODAY */}
         {tab === 'today' && (
           <div className="space-y-3">
+            <DailyQuote />
+
             <div
               className="rounded-xl border"
               style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
             >
               <StreakDisplay streak={streak} longestStreak={longestStreak} totalDays={totalDays} />
             </div>
+
+            <XPBar levelInfo={levelInfo} />
 
             <div className="space-y-2">
               {habits.map(habit => (

@@ -3,11 +3,11 @@ import { useState } from 'react'
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 const PPL_CYCLE = ['Push', 'Pull', 'Leg']
 
-function getWeekDates() {
+function getWeekDates(offset = 0) {
   const today = new Date()
   const day = today.getDay()
   const monday = new Date(today)
-  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1))
+  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1) + offset * 7)
   return Array.from({ length: 7 }, (_, i) => {
     const d = new Date(monday)
     d.setDate(monday.getDate() + i)
@@ -21,9 +21,12 @@ function formatRange(dates) {
 }
 
 export default function WeeklySummary({ habits, logs, onToggleDate }) {
-  const weekDates = getWeekDates()
   const today = new Date().toISOString().split('T')[0]
+  const [weekOffset, setWeekOffset] = useState(0)
   const [pplPicker, setPplPicker] = useState(null)
+
+  const weekDates = getWeekDates(weekOffset)
+  const isCurrentWeek = weekOffset === 0
 
   const pastDates = weekDates.filter(d => d <= today)
   const possible = habits.length * pastDates.length
@@ -84,34 +87,59 @@ export default function WeeklySummary({ habits, logs, onToggleDate }) {
 
       {/* Weekly score */}
       <div
-        className="rounded-xl border p-5 flex items-center justify-between"
+        className="rounded-xl border p-5"
         style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
       >
-        <div>
-          <div className="text-[10px] uppercase tracking-widest mb-1" style={{ color: 'var(--text-3)' }}>
-            {formatRange(weekDates)}
+        {/* Week navigation */}
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => setWeekOffset(o => o - 1)}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all active:scale-90"
+            style={{ background: 'var(--surface-raised)', color: 'var(--text-2)' }}
+          >
+            ‹
+          </button>
+          <div className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--text-3)' }}>
+            {isCurrentWeek ? 'This week' : formatRange(weekDates)}
           </div>
-          <div className="text-4xl font-black" style={{ color: pct === 100 ? 'var(--accent)' : 'var(--text)' }}>
-            {pct}<span className="text-xl font-semibold" style={{ color: 'var(--text-2)' }}>%</span>
-          </div>
-          <div className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>
-            {done} of {possible} completed
-          </div>
+          <button
+            onClick={() => setWeekOffset(o => o + 1)}
+            disabled={isCurrentWeek}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-sm transition-all active:scale-90"
+            style={{
+              background: 'var(--surface-raised)',
+              color: isCurrentWeek ? 'var(--border)' : 'var(--text-2)',
+              cursor: isCurrentWeek ? 'default' : 'pointer',
+            }}
+          >
+            ›
+          </button>
         </div>
 
-        <div className="space-y-2 text-right">
-          {habits.map(h => {
-            const cnt = pastDates.filter(d => logs[d]?.[h.id]?.done).length
-            const total = pastDates.length
-            return (
-              <div key={h.id}>
-                <div className="text-[10px]" style={{ color: 'var(--text-3)' }}>{h.name.split(' ')[0]}</div>
-                <div className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
-                  {cnt}<span style={{ color: 'var(--text-3)' }}>/{total}</span>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-4xl font-black" style={{ color: pct === 100 ? 'var(--accent)' : 'var(--text)' }}>
+              {pct}<span className="text-xl font-semibold" style={{ color: 'var(--text-2)' }}>%</span>
+            </div>
+            <div className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>
+              {done} of {possible} completed
+            </div>
+          </div>
+
+          <div className="space-y-2 text-right">
+            {habits.map(h => {
+              const cnt = pastDates.filter(d => logs[d]?.[h.id]?.done).length
+              const total = pastDates.length
+              return (
+                <div key={h.id}>
+                  <div className="text-[10px]" style={{ color: 'var(--text-3)' }}>{h.name.split(' ')[0]}</div>
+                  <div className="text-sm font-semibold" style={{ color: 'var(--text)' }}>
+                    {cnt}<span style={{ color: 'var(--text-3)' }}>/{total}</span>
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       </div>
 

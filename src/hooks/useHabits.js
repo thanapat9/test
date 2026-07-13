@@ -132,12 +132,27 @@ export function useHabits() {
     setHabits(prev => prev.filter(h => h.id !== id))
   }
 
+  function toggleHabitForDate(id, dateStr, extra = {}) {
+    setLogs(prev => {
+      const current = prev[dateStr]?.[id]
+      return {
+        ...prev,
+        [dateStr]: {
+          ...prev[dateStr],
+          [id]: current?.done
+            ? { done: false }
+            : { done: true, completedAt: new Date().toISOString(), retroactive: true, ...extra },
+        },
+      }
+    })
+  }
+
   const xp = calcXP(logs, habitIds)
 
   return {
     habits, logs, today, todayLog, todayPPL,
     streak, longestStreak, totalDays, unlockedBadges,
     xp, levelInfo: getLevel(xp),
-    toggleHabit, setNote, addHabit, removeHabit,
+    toggleHabit, setNote, addHabit, removeHabit, toggleHabitForDate,
   }
 }

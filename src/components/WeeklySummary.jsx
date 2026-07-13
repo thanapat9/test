@@ -1,4 +1,7 @@
+import { useState } from 'react'
+
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const PPL_CYCLE = ['Push', 'Pull', 'Leg']
 
 function getWeekDates() {
   const today = new Date()
@@ -17,9 +20,10 @@ function formatRange(dates) {
   return `${fmt(dates[0])} – ${fmt(dates[6])}`
 }
 
-export default function WeeklySummary({ habits, logs }) {
+export default function WeeklySummary({ habits, logs, onToggleDate }) {
   const weekDates = getWeekDates()
   const today = new Date().toISOString().split('T')[0]
+  const [pplPicker, setPplPicker] = useState(null)
 
   const pastDates = weekDates.filter(d => d <= today)
   const possible = habits.length * pastDates.length
@@ -30,8 +34,54 @@ export default function WeeklySummary({ habits, logs }) {
   const workoutDays = weekDates.filter(d => logs[d]?.workout?.done)
   const weekNotes = weekDates.filter(d => logs[d]?.course?.note)
 
+  function handleCellTap(habit, dateStr) {
+    if (!onToggleDate || dateStr > today) return
+    if (habit.isPPL && !logs[dateStr]?.[habit.id]?.done) {
+      setPplPicker({ habitId: habit.id, dateStr })
+    } else {
+      onToggleDate(habit.id, dateStr)
+    }
+  }
+
   return (
     <div className="space-y-4">
+      {/* PPL picker overlay */}
+      {pplPicker && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: 'rgba(0,0,0,0.35)' }}
+          onClick={() => setPplPicker(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-t-2xl p-5 pb-10"
+            style={{ background: 'var(--surface)' }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="text-[10px] uppercase tracking-widest mb-1 text-center" style={{ color: 'var(--text-3)' }}>
+              {new Date(pplPicker.dateStr + 'T00:00:00').toLocaleDateString('en', { weekday: 'long', day: 'numeric', month: 'short' })}
+            </div>
+            <div className="text-sm font-semibold mb-4 text-center" style={{ color: 'var(--text)' }}>
+              Which workout?
+            </div>
+            <div className="flex gap-3">
+              {PPL_CYCLE.map(type => (
+                <button
+                  key={type}
+                  className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95"
+                  style={{ background: 'var(--surface-raised)', color: 'var(--text)' }}
+                  onClick={() => {
+                    onToggleDate(pplPicker.habitId, pplPicker.dateStr, { type })
+                    setPplPicker(null)
+                  }}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Weekly score */}
       <div
         className="rounded-xl border p-5 flex items-center justify-between"
@@ -49,7 +99,6 @@ export default function WeeklySummary({ habits, logs }) {
           </div>
         </div>
 
-        {/* Per-habit mini scores */}
         <div className="space-y-2 text-right">
           {habits.map(h => {
             const cnt = pastDates.filter(d => logs[d]?.[h.id]?.done).length
@@ -85,9 +134,7 @@ export default function WeeklySummary({ habits, logs }) {
           <div
             key={habit.id}
             className="grid grid-cols-[1fr_repeat(7,28px)] gap-1 items-center px-4 py-3"
-            style={{
-              borderTop: idx > 0 ? `1px solid var(--border)` : 'none',
-            }}
+            style={{ borderTop: idx > 0 ? '1px solid var(--border)' : 'none' }}
           >
             <div className="text-xs font-medium truncate pr-2" style={{ color: 'var(--text)' }}>
               {habit.name.split(' ')[0]}
@@ -96,19 +143,23 @@ export default function WeeklySummary({ habits, logs }) {
               const isDone = logs[dateStr]?.[habit.id]?.done
               const isToday = dateStr === today
               const isFuture = dateStr > today
+              const isPast = dateStr < today
+              const isRetro = logs[dateStr]?.[habit.id]?.retroactive
               return (
                 <div
                   key={dateStr}
-                  className="w-6 h-6 rounded-md mx-auto flex items-center justify-center text-[10px] font-bold"
+                  onClick={() => handleCellTap(habit, dateStr)}
+                  className="w-6 h-6 rounded-md mx-auto flex items-center justify-center text-[10px] font-bold transition-all active:scale-90"
                   style={{
                     background: isDone ? 'var(--accent)' : isFuture ? 'transparent' : 'var(--surface-raised)',
                     color: isDone ? 'var(--bg)' : 'var(--text-3)',
                     outline: isToday ? '1px solid var(--accent)' : 'none',
                     outlineOffset: '1px',
                     opacity: isFuture ? 0.3 : 1,
+                    cursor: isFuture ? 'default' : 'pointer',
                   }}
                 >
-                  {isDone ? '✓' : ''}
+                  {isDone ? (isRetro && isPast ? '·' : '✓') : ''}
                 </div>
               )
             })}

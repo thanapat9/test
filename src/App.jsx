@@ -24,7 +24,7 @@ export default function App() {
     habits, logs, today, todayLog, todayPPL,
     streak, longestStreak, totalDays, unlockedBadges,
     xp, levelInfo,
-    toggleHabit, setNote, addHabit, removeHabit,
+    toggleHabit, setNote, addHabit, removeHabit, toggleHabitForDate,
   } = useHabits()
 
   const [tab, setTab] = useState('today')
@@ -159,7 +159,7 @@ export default function App() {
 
         {/* WEEK */}
         {tab === 'week' && (
-          <WeeklySummary habits={habits} logs={logs} />
+          <WeeklySummary habits={habits} logs={logs} onToggleDate={toggleHabitForDate} />
         )}
 
         {/* HABITS */}

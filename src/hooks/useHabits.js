@@ -3,11 +3,9 @@ import { calcXP, getLevel } from '../data/levels'
 
 const LOGS_KEY = 'kaizen_logs_v2'
 const HABITS_KEY = 'kaizen_habits_v2'
-const PPL_CYCLE = ['Push', 'Pull', 'Leg']
-
 export const DEFAULT_HABITS = [
   { id: 'course', name: 'Data Engineer Course', description: '1 chapter minimum', hasNote: true, isPPL: false, deletable: false },
-  { id: 'workout', name: 'Workout', description: 'Push · Pull · Leg', hasNote: false, isPPL: true, deletable: false },
+  { id: 'workout', name: 'Workout', description: 'Pick muscle groups', hasNote: false, isPPL: true, deletable: false },
 ]
 
 export const BADGES = [
@@ -26,14 +24,6 @@ function todayStr() {
   return new Date().toISOString().split('T')[0]
 }
 
-function getNextPPL(logs) {
-  const done = Object.entries(logs)
-    .filter(([, v]) => v['workout']?.done && v['workout']?.type)
-    .sort(([a], [b]) => a.localeCompare(b))
-  if (done.length === 0) return PPL_CYCLE[0]
-  const lastType = done[done.length - 1][1]['workout'].type
-  return PPL_CYCLE[(PPL_CYCLE.indexOf(lastType) + 1) % PPL_CYCLE.length]
-}
 
 function calcStreak(logs, habitIds) {
   const today = todayStr()
@@ -86,7 +76,6 @@ export function useHabits() {
 
   const today = todayStr()
   const todayLog = logs[today] || {}
-  const todayPPL = getNextPPL(logs)
   const habitIds = habits.map(h => h.id)
 
   const streak = calcStreak(logs, habitIds)
@@ -150,7 +139,7 @@ export function useHabits() {
   const xp = calcXP(logs, habitIds)
 
   return {
-    habits, logs, today, todayLog, todayPPL,
+    habits, logs, today, todayLog,
     streak, longestStreak, totalDays, unlockedBadges,
     xp, levelInfo: getLevel(xp),
     toggleHabit, setNote, addHabit, removeHabit, toggleHabitForDate,

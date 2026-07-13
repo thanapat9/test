@@ -21,7 +21,7 @@ function getTodayLabel() {
 
 export default function App() {
   const {
-    habits, logs, today, todayLog, todayPPL,
+    habits, logs, today, todayLog,
     streak, longestStreak, totalDays, unlockedBadges,
     xp, levelInfo,
     toggleHabit, setNote, addHabit, removeHabit, toggleHabitForDate,
@@ -107,7 +107,6 @@ export default function App() {
                   key={habit.id}
                   habit={habit}
                   logEntry={todayLog[habit.id]}
-                  todayPPL={todayPPL}
                   onToggle={toggleHabit}
                   onNote={setNote}
                 />

@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-const PPL_CYCLE = ['Push', 'Pull', 'Leg']
+const MUSCLES = ['Chest', 'Shoulder', 'Back', 'Leg', 'Arm', 'Abs']
 
 function getWeekDates(offset = 0) {
   const today = new Date()
@@ -23,7 +23,8 @@ function formatRange(dates) {
 export default function WeeklySummary({ habits, logs, onToggleDate }) {
   const today = new Date().toISOString().split('T')[0]
   const [weekOffset, setWeekOffset] = useState(0)
-  const [pplPicker, setPplPicker] = useState(null)
+  const [musclePicker, setMusclePicker] = useState(null) // { habitId, dateStr }
+  const [selected, setSelected] = useState([])
 
   const weekDates = getWeekDates(weekOffset)
   const isCurrentWeek = weekOffset === 0
@@ -40,20 +41,27 @@ export default function WeeklySummary({ habits, logs, onToggleDate }) {
   function handleCellTap(habit, dateStr) {
     if (!onToggleDate || dateStr > today) return
     if (habit.isPPL && !logs[dateStr]?.[habit.id]?.done) {
-      setPplPicker({ habitId: habit.id, dateStr })
+      setSelected([])
+      setMusclePicker({ habitId: habit.id, dateStr })
     } else {
       onToggleDate(habit.id, dateStr)
     }
   }
 
+  function confirmMuscles() {
+    if (!musclePicker || selected.length === 0) return
+    onToggleDate(musclePicker.habitId, musclePicker.dateStr, { muscles: selected })
+    setMusclePicker(null)
+  }
+
   return (
     <div className="space-y-4">
-      {/* PPL picker overlay */}
-      {pplPicker && (
+      {/* Muscle picker overlay */}
+      {musclePicker && (
         <div
           className="fixed inset-0 z-50 flex items-end justify-center"
           style={{ background: 'rgba(0,0,0,0.35)' }}
-          onClick={() => setPplPicker(null)}
+          onClick={() => setMusclePicker(null)}
         >
           <div
             className="w-full max-w-md rounded-t-2xl p-5 pb-10"
@@ -61,26 +69,40 @@ export default function WeeklySummary({ habits, logs, onToggleDate }) {
             onClick={e => e.stopPropagation()}
           >
             <div className="text-[10px] uppercase tracking-widest mb-1 text-center" style={{ color: 'var(--text-3)' }}>
-              {new Date(pplPicker.dateStr + 'T00:00:00').toLocaleDateString('en', { weekday: 'long', day: 'numeric', month: 'short' })}
+              {new Date(musclePicker.dateStr + 'T00:00:00').toLocaleDateString('en', { weekday: 'long', day: 'numeric', month: 'short' })}
             </div>
             <div className="text-sm font-semibold mb-4 text-center" style={{ color: 'var(--text)' }}>
-              Which workout?
+              Which muscles?
             </div>
-            <div className="flex gap-3">
-              {PPL_CYCLE.map(type => (
-                <button
-                  key={type}
-                  className="flex-1 py-3 rounded-xl text-sm font-bold transition-all active:scale-95"
-                  style={{ background: 'var(--surface-raised)', color: 'var(--text)' }}
-                  onClick={() => {
-                    onToggleDate(pplPicker.habitId, pplPicker.dateStr, { type })
-                    setPplPicker(null)
-                  }}
-                >
-                  {type}
-                </button>
-              ))}
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {MUSCLES.map(m => {
+                const on = selected.includes(m)
+                return (
+                  <button
+                    key={m}
+                    onClick={() => setSelected(s => on ? s.filter(x => x !== m) : [...s, m])}
+                    className="py-3 rounded-xl text-sm font-medium transition-all active:scale-95"
+                    style={{
+                      background: on ? 'var(--accent)' : 'var(--surface-raised)',
+                      color: on ? 'white' : 'var(--text)',
+                    }}
+                  >
+                    {m}
+                  </button>
+                )
+              })}
             </div>
+            <button
+              onClick={confirmMuscles}
+              disabled={selected.length === 0}
+              className="w-full py-3 rounded-xl text-sm font-bold transition-all active:scale-95"
+              style={{
+                background: selected.length > 0 ? 'var(--accent)' : 'var(--surface-raised)',
+                color: selected.length > 0 ? 'white' : 'var(--text-3)',
+              }}
+            >
+              Done {selected.length > 0 ? `· ${selected.length} selected` : ''}
+            </button>
           </div>
         </div>
       )}
@@ -204,20 +226,26 @@ export default function WeeklySummary({ habits, logs, onToggleDate }) {
           <div className="text-[10px] uppercase tracking-widest mb-3" style={{ color: 'var(--text-3)' }}>
             Workout this week
           </div>
-          <div className="flex gap-2 flex-wrap">
+          <div className="space-y-2">
             {workoutDays.map(d => {
-              const type = logs[d]?.workout?.type
+              const muscles = logs[d]?.workout?.muscles || []
+              const label = new Date(d + 'T00:00:00').toLocaleDateString('en', { weekday: 'short', day: 'numeric' })
               return (
-                <div
-                  key={d}
-                  className="text-xs px-2.5 py-1 rounded-md font-medium"
-                  style={{
-                    background: 'var(--accent-dim)',
-                    color: 'var(--accent)',
-                    border: '1px solid rgba(249,115,22,0.2)',
-                  }}
-                >
-                  {type}
+                <div key={d} className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[10px] w-10 shrink-0" style={{ color: 'var(--text-3)' }}>{label}</span>
+                  {muscles.map(m => (
+                    <div
+                      key={m}
+                      className="text-xs px-2 py-0.5 rounded-md font-medium"
+                      style={{
+                        background: 'var(--accent-dim)',
+                        color: 'var(--accent)',
+                        border: '1px solid rgba(249,115,22,0.2)',
+                      }}
+                    >
+                      {m}
+                    </div>
+                  ))}
                 </div>
               )
             })}
@@ -226,6 +254,7 @@ export default function WeeklySummary({ habits, logs, onToggleDate }) {
       )}
 
       {/* Course notes */}
+
       {weekNotes.length > 0 && (
         <div
           className="rounded-xl border p-4"
